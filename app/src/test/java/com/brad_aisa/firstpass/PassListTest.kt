@@ -31,6 +31,19 @@ class PassListTest {
     }
 
     @Test
+    fun clear_Clears() {
+        val passList = PassList()
+        // confirm empty doesn't cause an exception
+        passList.clear()
+
+        val newItem = PassListItem(site="dummy", password="pass")
+        passList.add(newItem)
+        assertEquals("new item added count", 1, passList.items.size)
+        passList.clear()
+        assertEquals("count after clear", 0, passList.items.size)
+    }
+
+    @Test
     fun removeByKnownId_Removes() {
         val passList = PassList()
         var newItem = PassListItem(site="dummy", password="pass")

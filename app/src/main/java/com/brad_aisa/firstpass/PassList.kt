@@ -24,6 +24,13 @@ class PassList {
     }
 
     /**
+     * Remove all items from the list
+     */
+    fun clear() {
+        items_.clear()
+    }
+
+    /**
      * Load the list from a stream -- existing contents are deleted
      *
      * @param stream the InputStream from which to load the list
