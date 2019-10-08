@@ -4,27 +4,20 @@ import androidx.appcompat.app.AppCompatActivity
 import android.app.AlertDialog
 import android.content.*
 import android.os.Bundle
-import android.widget.TextView
 import com.brad_aissa.firstpass.R
-import android.widget.GridView
-import androidx.core.app.ComponentActivity
-import androidx.core.app.ComponentActivity.ExtraData
-import androidx.core.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import android.view.View
-import android.widget.ArrayAdapter
-import androidx.fragment.app.FragmentManager
+import android.widget.*
 import java.io.*
 import java.util.ArrayList
 import kotlinx.android.synthetic.main.activity_main.*
 import android.content.DialogInterface
-import android.os.Environment
 
 
-private const val FILENAME = "FirstPassList.txt"; //TODO: encrypted version uses different name
+private const val FILENAME = "FirstPassList.txt";
 
 class MainActivity : AppCompatActivity() {
 
+    private var selectedIndex = -1
     private val passList: PassList = PassList()
     private var listItems = ArrayList<PassListItem>()
     private var adapter: ArrayAdapter<PassListItem>? = null
@@ -33,12 +26,17 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        passListListView.setSelector(R.color.list_selector_background)
         adapter = ArrayAdapter(this,
             android.R.layout.simple_list_item_1,
             listItems)
 
         passListListView.adapter = adapter
+        passListListView.setSelector(R.color.list_selector_background)
+        passListListView.onItemClickListener = object : AdapterView.OnItemClickListener {
+            override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                handleItemSelecting(position)
+            }
+        }
 
         // attach button click handlers
         buttonNew.setOnClickListener {
@@ -59,17 +57,42 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
+     * Handles an item being selected, or forces an item to be selected
+     *
+     * NOTE: forceSelection can currently only be used to force unselection
+     *
+     * @param itemIndex the item being selected or to select; -ve value for none
+     * @param forceSelection set false (default) when handling from UI; set true to force selection from code
+     */
+    private fun handleItemSelecting(itemIndex: Int, forceSelection: Boolean = false) {
+        selectedIndex = itemIndex
+
+        val itemIsSelected = (selectedIndex >= 0)
+        buttonCopyClipboard.isEnabled = itemIsSelected
+        buttonEdit.isEnabled = itemIsSelected
+        buttonDelete.isEnabled = itemIsSelected
+
+        if (forceSelection) {
+            if (itemIsSelected) {
+                //NOTE: no effective way of doing this was found
+            } else {
+                // note: this is an effective way to force unselect
+                passListListView.adapter = adapter
+            }
+        }
+    }
+
+    /**
      * Get the currently selected item
      *
      * @return the currently selected item; null if empty or none selected
      */
     fun getSelectedPassListItem(): PassListItem? {
-        //TODO just a dummy for now
-        if (passList.items.isEmpty()) {
+        if (selectedIndex < 0)
             return null
-        } else {
-            return passList.items[2]; //TEMP
-        }
+
+        var selItem = passListListView.adapter.getItem(selectedIndex) as PassListItem
+        return selItem
     }
 
     private fun onNewButtonClick() {
@@ -78,10 +101,15 @@ class MainActivity : AppCompatActivity() {
         dialog.site = "example.com"
         dialog.password = "pass123"
         dialog.setOnOkButtonHandler {
-            // create and add a new item from dialog
-            val item = PassListItem(it.site, it.password)
-            passList.add(item)
-            saveRefreshPassListView()
+            // create and add a new item from dialog, but must have a site
+            val site = it.site.trim()
+            if (!site.isEmpty()) {
+                val item = PassListItem(it.site, it.password)
+                passList.add(item)
+                saveRefreshPassListView()
+                // unselect items, so previous item is not selected
+                handleItemSelecting(-1, forceSelection = true)
+            }
         }
         dialog.show()
     }
@@ -103,10 +131,13 @@ class MainActivity : AppCompatActivity() {
         dialog.site = pli.site
         dialog.password = pli.password
         dialog.setOnOkButtonHandler {
-            // update the item from dialog
-            pli.site = it.site
-            pli.password = it.password
-            saveRefreshPassListView()
+            // update the item from dialog -- user not allowed to set blank
+            val site = it.site.trim()
+            if (!site.isEmpty()) {
+                pli.site = site
+                pli.password = it.password
+                saveRefreshPassListView()
+            }
         }
         dialog.show()
     }
@@ -135,6 +166,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun doDeleteItem(passListItem: PassListItem) {
         passList.removeById(passListItem.id)
+        handleItemSelecting(-1, forceSelection = true)
         saveRefreshPassListView()
     }
 
@@ -150,15 +182,6 @@ class MainActivity : AppCompatActivity() {
         for (pli in passList.items) {
             listItems.add(pli)
         }
-
-        //passListTextView
-        /*val passListTextView: TextView = findViewById((R.id.passListTextView))
-        //TEMP
-        var passListText = ""
-        for (pli in passList.items) {
-            passListText += (pli.site + '\n');
-        }
-        passListTextView.text = passListText*/
     }
 
     /**
@@ -174,17 +197,9 @@ class MainActivity : AppCompatActivity() {
             val stream = FileInputStream(passListFile)
             //TODO put in an exception handler, warn user or try to recover
             passList.load(stream)
-        } else {
-            //TEMP
-            passList.add(PassListItem("somesite.com", "ApassForSome@"))
-            passList.add(PassListItem("acme.com", "acme1234"))
-            for (i in 0..9)
-                passList.add(PassListItem("site$i.com", "Pass1234@$i"))
         }
-
-        //TODO: order, probably sort
-
     }
+
     /**
      * Save the PassList to storage
      *
@@ -201,7 +216,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getPassListFile(): File {
-        val filesDir = applicationContext.filesDir//Environment.getDataDirectory()
+        val filesDir = applicationContext.filesDir
         return File(filesDir, FILENAME)
     }
 }

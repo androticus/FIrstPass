@@ -26,27 +26,39 @@
         android:id="@+id/buttonNew" app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintHorizontal_bias="0.5" app:layout_constraintEnd_toStartOf="@+id/buttonCopyClipboard"
         android:layout_marginBottom="8dp" app:layout_constraintBottom_toBottomOf="parent"/>
+
     <Button
-        android:text="Copy Pass"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:id="@+id/buttonCopyClipboard"
-        app:layout_constraintStart_toEndOf="@+id/buttonNew" app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintEnd_toStartOf="@+id/buttonEdit" android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"/>
-    <Button
-        android:text="Edit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:enabled="false"
+        android:text="Copy Pass"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/buttonEdit"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/buttonNew" />
+
+    <Button
         android:id="@+id/buttonEdit"
-        app:layout_constraintStart_toEndOf="@+id/buttonCopyClipboard" app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintEnd_toStartOf="@+id/buttonDelete" android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"/>
-    <Button
-        android:text="Delete"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:enabled="false"
+        android:text="Edit"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/buttonDelete"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/buttonCopyClipboard" />
+
+    <Button
         android:id="@+id/buttonDelete"
-        app:layout_constraintStart_toEndOf="@+id/buttonEdit" app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintEnd_toEndOf="parent" android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"/></androidx.constraintlayout.widget.ConstraintLayout>
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:enabled="false"
+        android:text="Delete"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/buttonEdit" /></androidx.constraintlayout.widget.ConstraintLayout>

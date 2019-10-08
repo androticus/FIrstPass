@@ -45,7 +45,6 @@ class PassList {
                 var line = bsr.readLine()
                 while (line != null) {
                     val splits = line.split('\t')
-                    //TODO: probably can't assume splits[1] will exist, if empty
                     val item = PassListItem(splits[0], splits[1])
                     items_.add(item)
 

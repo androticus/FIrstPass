@@ -3,19 +3,9 @@ package com.brad_aisa.firstpass
 import androidx.appcompat.app.AppCompatActivity
 import android.app.*
 import android.content.*
-import android.os.Bundle
 import android.view.*
-import android.widget.TextView
 import com.brad_aissa.firstpass.R
 import android.widget.*
-import androidx.core.app.ComponentActivity
-import androidx.core.app.ComponentActivity.ExtraData
-import androidx.core.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-import android.view.View
-import android.widget.ArrayAdapter
-import java.util.ArrayList
-import kotlinx.android.synthetic.main.activity_main.*
 
 class EditPassListItemDialog  {
     private var dialog: AlertDialog? = null
