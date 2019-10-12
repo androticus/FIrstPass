@@ -11,9 +11,10 @@ import java.io.*
 import java.util.ArrayList
 import kotlinx.android.synthetic.main.activity_main.*
 import android.content.DialogInterface
+import androidx.security.crypto.*
 
 
-private const val FILENAME = "FirstPassList.txt";
+private const val FILENAME = "FirstPassList.enc"; // an encrypted text file
 
 class MainActivity : AppCompatActivity() {
 
@@ -185,38 +186,63 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Load the PassList from storage
+     * Load the PassList from encrypted storage
      *
      * Usually only called once, on startup
      */
     private fun loadPassList() {
         passList.clear()
+
         val passListFile = getPassListFile()
         if (passListFile.exists()) {
-            val passListFile = getPassListFile()
-            val stream = FileInputStream(passListFile)
+            val encryptedFile = getEncryptedPassListFile(passListFile)
+            val stream = encryptedFile.openFileInput()
             //TODO put in an exception handler, warn user or try to recover
             passList.load(stream)
         }
     }
 
     /**
-     * Save the PassList to storage
+     * Save the PassList to encrypted storage
      *
      * Called when user has made changes
      */
     private fun savePassList() {
-        val passListFile = getPassListFile()
-        if (!passListFile.exists()) {
-            passListFile.createNewFile()
+        try {
+            // we have to delete it if it already exists
+            // TODO: we might want to copy to a backup file, to restore in case something goes wrong
+            val file = getPassListFile()
+            if (file.exists()) {
+                file.delete()
+            }
+            val encryptedFile = getEncryptedPassListFile(file)
+            val stream = encryptedFile.openFileOutput()
+            passList.save(stream)
         }
-        val stream = FileOutputStream(passListFile)
-        //TODO put in an exception handler, warn user or try to recover
-        passList.save(stream)
+        catch (e: Exception) {
+            e.toString()
+            //TODO maybe try to recover, or warn user
+        }
     }
 
     private fun getPassListFile(): File {
         val filesDir = applicationContext.filesDir
         return File(filesDir, FILENAME)
     }
+
+    private fun getEncryptedPassListFile(file: File): EncryptedFile {
+        // see: https://developer.android.com/guide/topics/security/cryptography
+        // Google-recommended values
+        val keyGenParameterSpec = MasterKeys.AES256_GCM_SPEC
+        val masterKeyAlias = MasterKeys.getOrCreate(keyGenParameterSpec)
+
+        val encryptedFile = EncryptedFile.Builder(
+            file,
+            applicationContext,
+            masterKeyAlias,
+            EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
+        ).build()
+        return encryptedFile
+    }
+
 }
